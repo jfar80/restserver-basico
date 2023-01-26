@@ -4,22 +4,38 @@ const { response, request} = require('express');
 const bcryptjs = require('bcryptjs');
 const Usuario = require('../models/usuario');
 
-const usuariosGet = (req = request, res=response)=> {
-    const {q, nombre, apikey} =req.query;
+const usuariosGet = async(req = request, res=response)=> {
+   
+    const {limite = 5, desde = 0} = req.query;
+    const query = {estado:true};
+      
+    const registrosConsultados = limite - desde;    
+
+    const [RegistrosEnBd, usuarios] = await Promise.all([
+        Usuario.countDocuments(query),
+        Usuario.find(query)
+    
+    ]);
+
     res.json({
-       msg: 'get API - controlador',
-       q,
-       nombre,
-       apikey
+        registrosConsultados,
+        RegistrosEnBd,
+        usuarios
    });
 }
-const usuariosPut = (req, res=response)=> {
+const usuariosPut = async(req, res=response)=> {
     const id =req.params.id;
-    res.json({
-       msg: 'Put API - controlador',
-       id
+    const {_id, password, google, ...resto} = req.body;
 
-   });
+  
+    if (password) {
+        const salt = bcryptjs.genSaltSync();
+        resto.password =bcryptjs.hashSync(password, salt);
+    }
+
+    const  usuario = await Usuario.findByIdAndUpdate(id, resto);
+    
+    res.json(usuario);
 }
 const usuariosPost = async (req, res=response)=> {
 
@@ -38,15 +54,22 @@ const usuariosPost = async (req, res=response)=> {
        usuario
    });
 }
-const usuariosPatch = (req, res)=> {
+const usuariosPatch = (req, res = response)=> {
     res.json({
        msg: 'Patch API - controlador'
    });
 }
-const usuariosDelete = (req, res)=> {
-    res.json({
-       msg: 'Delete API - controlador'
-   });
+const usuariosDelete = async(req, res = response)=> {
+
+    const {id} =req.params;
+
+    //Fisicamente lo borramos no es recomendable por que se pierde la identidad referencial
+    //const usuario = await Usuario.findByIdAndDelete (id);
+    
+    //Delete cambiando el estado del usuario
+    const usuario = await Usuario.findByIdAndUpdate( id, {estado:false}, {new:true});
+
+    res.json(usuario);
 }
 module.exports = {
     usuariosGet,

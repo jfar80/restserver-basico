@@ -63,11 +63,12 @@ const usuariosDelete = async(req, res = response)=> {
 
     const {id} =req.params;
 
-    //Fisicamente lo borramos no es recomendable por que se pierde la identidad referencial
-    //const usuario = await Usuario.findByIdAndDelete (id);
+    
     
     //Delete cambiando el estado del usuario
     const usuario = await Usuario.findByIdAndUpdate( id, {estado:false}, {new:true});
+
+    
 
     res.json(usuario);
 }

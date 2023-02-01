@@ -49,7 +49,7 @@ const validarJWT= async(req, res = response, next) => {
 
     
 
-    next();
+    
 
 
 }

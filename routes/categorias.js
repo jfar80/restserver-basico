@@ -3,22 +3,24 @@ const {check}=require('express-validator');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { crearCategoria } = require('../controllers/categorias');
+const { crearCategoria, obtenerCategorias, obtenerCategoria, actualizarCategoria, borrarCategoria } = require('../controllers/categorias');
+const { existeCategoriaPorId } = require('../helpers/db-validators');
+const { esAdminRole } = require('../middlewares/validar-roles');
 
 
 
 const router = Router();
 
 //optener todas las categorias - publico
-router.get('/', (req, res) => {
-    res.json('get');
-});
+router.get('/', obtenerCategorias);
 
 //optener una categoria por id - publico 
-//TODO check('id).custom(existeCategoria) ver video taread crud de categorias min 4
-router.get('/:id',(req, res) => {
-    res.json('get - id');
-});
+
+router.get('/:id',[
+    check('id', 'No es un Id de Mongo valido').isMongoId(),
+    check('id').custom(existeCategoriaPorId),
+    validarCampos], obtenerCategoria);
+   
 
 //crear una categoria - privado - cualquier rol, cualquier persona con un token valido
 router.post('/', [
@@ -27,21 +29,27 @@ router.post('/', [
     validarCampos 
     ], crearCategoria); 
 
+
 //actualizar un registro por este id
-router.put('/:id', (req, res) => {
-    res.json('put');
-});
+router.put('/:id',[
+    validarJWT,
+    check('nombre', 'El nombre es obligatorio').not().isEmpty(), 
+    check('id').custom(existeCategoriaPorId),
+    validarCampos
+    ], actualizarCategoria);
+
 
 //Eliminar un registro por este id - cualquiera con token valido
-router.delete('/:id', (req, res) => {
-    res.json('delete');
-});
 
 
 //borrar una categoria - admin
-router.put('/:id', (req, res) => {
-    res.json('put');
-});
+router.delete('/:id',[
+    validarJWT,
+    esAdminRole,
+    check('id', 'No es un Id de Mongo valido').isMongoId(),
+    check('id').custom(existeCategoriaPorId),
+    validarCampos
+    ], borrarCategoria);
 
 
 module.exports = router;

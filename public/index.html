@@ -37,7 +37,7 @@
            // console.log('id_token', response.credential);
            const body ={ id_token: response.credential};
 
-           fetch (process.env.ENVIONMENT, {
+           fetch (process.env.ENVIRONMENT, {
                  method: 'POST',
                  headers: {
                     'Content-Type': 'application/json'

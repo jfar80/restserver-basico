@@ -45,7 +45,7 @@ router.delete('/:id',[
     tieneRole ('ADMIN_ROLE','VENTAS_ROLE'),
     check('id', 'No es un Id válido').isMongoId(),
     check('id').custom(IdExiste),
-    //validarCampos
+    validarCampos
 
 
 ],  usuariosDelete);
